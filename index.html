@@ -42,6 +42,7 @@
     <!-- Step 1: Raw Material Selection -->
     <div id="step1" class="step active card p-4">
       <h2 class="mb-3">Step 1: Select Raw Material</h2>
+      <div class="form-row">
       <div class="form-group">
         <label for="rawMaterialSelect">Raw Material:</label>
         <select id="rawMaterialSelect" class="form-control">
@@ -50,13 +51,14 @@
           <option value="48x600">48" x 600" (Thickness: 0.6")</option>
         </select>
       </div>
+            <div class="form-group">
+        <label for="rawMaterialRate">Raw Material Rate ($ per sq.in):</label>
+        <input type="number" id="rawMaterialRate" min="0" step="any" placeholder="e.g., 0.05" class="form-control">
+      </div>
+      </div>
       <div class="form-group">
         <label for="processedLength">Processed Length (inches):</label>
         <input type="number" id="processedLength" min="1" placeholder="e.g., 200" class="form-control">
-      </div>
-      <div class="form-group">
-        <label for="rawMaterialRate">Raw Material Rate ($ per sq.in):</label>
-        <input type="number" id="rawMaterialRate" min="0" step="any" placeholder="e.g., 0.05" class="form-control">
       </div>
       <div class="d-flex justify-content-end">
         <button id="toStep2" class="btn btn-primary">Next</button>
