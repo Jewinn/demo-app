@@ -33,6 +33,11 @@
   <div class="container mt-4">
     <h1 class="mb-4 text-center">Rubber Die Cutting Process</h1>
     
+    <!-- Progress Bar -->
+    <div class="progress mb-4">
+      <div id="progressBar" class="progress-bar" role="progressbar" style="width: 33%;" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100">Step 1 of 3</div>
+    </div>
+    
     <!-- Step 1: Raw Material Selection -->
     <div id="step1" class="step active card p-4">
       <h2 class="mb-3">Step 1: Select Raw Material</h2>
@@ -48,9 +53,8 @@
         <label for="processedLength">Processed Length (inches):</label>
         <input type="number" id="processedLength" min="1" placeholder="e.g., 200" class="form-control">
       </div>
-      <div class="d-flex justify-content-between">
-        <button id="toStep2" class="btn btn-primary">Next: Add Die-Cut Products</button>
-        <button id="newBatch1" class="btn btn-secondary">New Batch</button>
+      <div class="d-flex justify-content-end">
+        <button id="toStep2" class="btn btn-primary">Next</button>
       </div>
     </div>
     
@@ -166,8 +170,7 @@
       
       <div class="d-flex justify-content-between">
         <button id="backToStep1" class="btn btn-secondary">Previous</button>
-        <button id="toStep3" class="btn btn-primary">Next: Overview</button>
-        <button id="newBatch2" class="btn btn-secondary">New Batch</button>
+        <button id="toStep3" class="btn btn-primary">Next</button>
       </div>
     </div>
     
@@ -180,8 +183,8 @@
       <div id="overviewProducts"></div>
       <div class="d-flex justify-content-between">
         <button id="backToStep2" class="btn btn-secondary">Previous</button>
-        <button id="processBatchBtn" class="btn btn-primary">Process Batch</button>
-        <button id="newBatch3" class="btn btn-secondary">New Batch</button>
+        <!-- In Step 3, instead of processing batch, we show a New Batch button with confirmation -->
+        <button id="newBatchBtn" class="btn btn-primary">New Batch</button>
       </div>
     </div>
   </div>
@@ -220,6 +223,18 @@
       }
     }
     
+    // Function to update the progress bar
+    function updateProgressBar(step) {
+      const progressBar = document.getElementById("progressBar");
+      let percent = 33;
+      let label = "Step 1 of 3";
+      if(step === 2) { percent = 66; label = "Step 2 of 3"; }
+      if(step === 3) { percent = 100; label = "Step 3 of 3"; }
+      progressBar.style.width = percent + "%";
+      progressBar.setAttribute("aria-valuenow", percent);
+      progressBar.innerText = label;
+    }
+    
     // Function to show a given step and hide others
     function showStep(step) {
       currentStep = step;
@@ -227,6 +242,7 @@
         div.classList.remove('active');
       });
       document.getElementById('step' + step).classList.add('active');
+      updateProgressBar(step);
     }
     
     // Reset the whole form for a new batch
@@ -263,18 +279,14 @@
       document.getElementById('overviewProducts').innerHTML = "";
       
       document.querySelectorAll("input, select, button").forEach(el => {
+        // Do not disable the New Batch button
         if (el.id.indexOf("newBatch") === -1) el.disabled = false;
       });
       
       showStep(1);
     }
     
-    // Navigation buttons for New Batch in each step
-    document.getElementById('newBatch1').addEventListener('click', resetBatch);
-    document.getElementById('newBatch2').addEventListener('click', resetBatch);
-    document.getElementById('newBatch3').addEventListener('click', resetBatch);
-    
-    // Step 1 to Step 2
+    // Navigation: Step 1 to Step 2
     document.getElementById('toStep2').addEventListener('click', function() {
       const rawSelect = document.getElementById('rawMaterialSelect').value;
       processedLength = parseFloat(document.getElementById('processedLength').value);
@@ -536,6 +548,13 @@
       document.getElementById('circularRingOuterRadius').value = "";
       document.getElementById('circularRingInnerRadius').value = "";
       document.getElementById('customUnitArea').value = "";
+    });
+    
+    // New Batch button in Step 3: confirm before reset
+    document.getElementById('newBatchBtn').addEventListener('click', function() {
+      if(confirm("Are you really want to start a new batch?")) {
+        resetBatch();
+      }
     });
   </script>
   
