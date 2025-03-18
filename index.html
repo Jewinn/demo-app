@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>Rubber Die Cutting Process</title>
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -40,7 +41,7 @@
     
     <!-- Step 1: Raw Material Selection -->
     <div id="step1" class="step active card p-4">
-      <h3 class="text-center mb-3">Step 1: Select Raw Material</h3>
+      <h2 class="mb-3">Step 1: Select Raw Material</h2>
       <div class="form-group">
         <label for="rawMaterialSelect">Raw Material:</label>
         <select id="rawMaterialSelect" class="form-control">
@@ -60,16 +61,15 @@
     
     <!-- Step 2: Die-Cut Product Addition -->
     <div id="step2" class="step card p-4">
-      <h3 class="text-center mb-3">Step 2: Add Die-Cut Products</h3>
+      <h2 class="mb-3">Step 2: Add Die-Cut Products</h2>
       <div class="infoBox" id="rawMaterialInfo">
         <!-- Raw material details will be shown here -->
       </div>
-      <div class="form-row">
-      <div class="form-group col-md-6">
+      <div class="form-group">
         <label for="productName">Product Name:</label>
         <input type="text" id="productName" placeholder="Enter product name" class="form-control">
       </div>
-      <div class="form-group col-md-6">
+      <div class="form-group">
         <label for="productType">Product Type:</label>
         <select id="productType" class="form-control">
           <option value="rectangle">Rectangle</option>
@@ -78,7 +78,6 @@
           <option value="circularRing">Circular Ring</option>
           <option value="custom">Custom</option>
         </select>
-      </div>
       </div>
       
       <!-- Fields for Rectangle -->
@@ -178,14 +177,14 @@
     
     <!-- Step 3: Overview and Batch Processing -->
     <div id="step3" class="step card p-4">
-      <h3 class="text-center mb-3">Step 3: Overview & Batch Processing</h3>
+      <h2 class="mb-3">Step 3: Overview & Batch Processing</h2>
       <div class="infoBox" id="overviewInfo">
         <!-- Raw material details and totals will be shown here -->
       </div>
       <div id="overviewProducts"></div>
       <div class="d-flex justify-content-between">
         <button id="backToStep2" class="btn btn-secondary">Previous</button>
-        <!-- In Step 3, instead of processing batch, we show a New Batch button with confirmation -->
+        <!-- New Batch button appears in Step 3 with a confirmation prompt -->
         <button id="newBatchBtn" class="btn btn-primary">New Batch</button>
       </div>
     </div>
@@ -281,12 +280,19 @@
       document.getElementById('overviewProducts').innerHTML = "";
       
       document.querySelectorAll("input, select, button").forEach(el => {
-        // Do not disable the New Batch button
+        // Do not disable New Batch button(s)
         if (el.id.indexOf("newBatch") === -1) el.disabled = false;
       });
       
       showStep(1);
     }
+    
+    // Navigation buttons for New Batch in each step (only appear after processing batch, so not included in Steps 1 and 2)
+    document.getElementById('newBatchBtn').addEventListener('click', function() {
+      if(confirm("Are you really want to start a new batch?")) {
+        resetBatch();
+      }
+    });
     
     // Navigation: Step 1 to Step 2
     document.getElementById('toStep2').addEventListener('click', function() {
@@ -550,13 +556,6 @@
       document.getElementById('circularRingOuterRadius').value = "";
       document.getElementById('circularRingInnerRadius').value = "";
       document.getElementById('customUnitArea').value = "";
-    });
-    
-    // New Batch button in Step 3: confirm before reset
-    document.getElementById('newBatchBtn').addEventListener('click', function() {
-      if(confirm("Are you really want to start a new batch?")) {
-        resetBatch();
-      }
     });
   </script>
   
