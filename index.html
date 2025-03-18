@@ -53,7 +53,7 @@
     
     <!-- Step 1: Raw Material Selection & Rate -->
     <div id="step1" class="step active card p-4">
-      <h3 class="mb-3 text-align-center">Step 1: Select Raw Material</h3>
+      <h3 class="mb-3 text-center">Step 1: Select Raw Material</h3>
       <div class="form-group">
         <label for="rawMaterialSelect">Raw Material:</label>
         <select id="rawMaterialSelect" class="form-control">
@@ -183,7 +183,6 @@
             <th>Parameters</th>
             <th>Quantity</th>
             <th>Unit Area (sq.in)</th>
-            <th>Unit Rate ($)</th>
             <th>Total Area (sq.in)</th>
             <th>Action</th>
           </tr>
@@ -494,12 +493,6 @@
         tdUnitArea.innerText = product.areaPerUnit.toFixed(2) + " (" + unitPercent + "%)";
         tr.appendChild(tdUnitArea);
         
-        let tdUnitRate = document.createElement('td');
-        // Recalculate total products area for unit rate calculation
-        let totalProductsArea = products.reduce((sum, prod) => sum + prod.totalArea, 0);
-        let unitRate = product.areaPerUnit * rawMaterialRate * (netProcessArea / totalProductsArea);
-        tdUnitRate.innerText = "$" + unitRate.toFixed(2);
-        tr.appendChild(tdUnitRate);
         
         let tdTotalArea = document.createElement('td');
         let totalPercent = ((product.totalArea / netProcessArea) * 100).toFixed(2);
