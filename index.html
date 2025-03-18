@@ -1,1 +1,546 @@
-demo-app.github.io
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rubber Die Cutting Process</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f0f2f5; /* Light background similar to Facebook */
+    }
+    .step {
+      display: none;
+      margin-top: 20px;
+    }
+    .step.active {
+      display: block;
+    }
+    .infoBox {
+      background-color: #e9f5ff; /* Light blue background */
+      padding: 10px;
+      margin-bottom: 15px;
+      border-left: 4px solid #007BFF;
+    }
+    /* Customize primary buttons to mimic Facebook blue */
+    .btn-primary {
+      background-color: #1877f2;
+      border-color: #1877f2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-4">
+    <h1 class="mb-4 text-center">Rubber Die Cutting Process</h1>
+    
+    <!-- Step 1: Raw Material Selection -->
+    <div id="step1" class="step active card p-4">
+      <h2 class="mb-3">Step 1: Select Raw Material</h2>
+      <div class="form-group">
+        <label for="rawMaterialSelect">Raw Material:</label>
+        <select id="rawMaterialSelect" class="form-control">
+          <option value="36x500">36" x 500" (Thickness: 0.5")</option>
+          <option value="24x400">24" x 400" (Thickness: 0.4")</option>
+          <option value="48x600">48" x 600" (Thickness: 0.6")</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="processedLength">Processed Length (inches):</label>
+        <input type="number" id="processedLength" min="1" placeholder="e.g., 200" class="form-control">
+      </div>
+      <div class="d-flex justify-content-between">
+        <button id="toStep2" class="btn btn-primary">Next: Add Die-Cut Products</button>
+        <button id="newBatch1" class="btn btn-secondary">New Batch</button>
+      </div>
+    </div>
+    
+    <!-- Step 2: Die-Cut Product Addition -->
+    <div id="step2" class="step card p-4">
+      <h2 class="mb-3">Step 2: Add Die-Cut Products</h2>
+      <div class="infoBox" id="rawMaterialInfo">
+        <!-- Raw material details will be shown here -->
+      </div>
+      <div class="form-group">
+        <label for="productName">Product Name:</label>
+        <input type="text" id="productName" placeholder="Enter product name" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="productType">Product Type:</label>
+        <select id="productType" class="form-control">
+          <option value="rectangle">Rectangle</option>
+          <option value="rectangleRing">Rectangle Ring</option>
+          <option value="circle">Circle</option>
+          <option value="circularRing">Circular Ring</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+      
+      <!-- Fields for Rectangle -->
+      <div id="rectangleFields" class="productFields">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label>Length:</label>
+            <input type="number" id="rectLength" min="0" step="any" placeholder="e.g., 10" class="form-control">
+          </div>
+          <div class="form-group col-md-6">
+            <label>Width:</label>
+            <input type="number" id="rectWidth" min="0" step="any" placeholder="e.g., 5" class="form-control">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Fields for Circle -->
+      <div id="circleFields" class="productFields" style="display:none">
+        <div class="form-group">
+          <label>Radius:</label>
+          <input type="number" id="circleRadius" min="0" step="any" placeholder="e.g., 7" class="form-control">
+        </div>
+      </div>
+      
+      <!-- Fields for Rectangle Ring -->
+      <div id="rectangleRingFields" class="productFields" style="display:none">
+        <div class="form-row">
+          <div class="form-group col-md-3">
+            <label>Outer Length:</label>
+            <input type="number" id="rectRingOuterLength" min="0" step="any" placeholder="e.g., 12" class="form-control">
+          </div>
+          <div class="form-group col-md-3">
+            <label>Outer Width:</label>
+            <input type="number" id="rectRingOuterWidth" min="0" step="any" placeholder="e.g., 8" class="form-control">
+          </div>
+          <div class="form-group col-md-3">
+            <label>Inner Length:</label>
+            <input type="number" id="rectRingInnerLength" min="0" step="any" placeholder="e.g., 8" class="form-control">
+          </div>
+          <div class="form-group col-md-3">
+            <label>Inner Width:</label>
+            <input type="number" id="rectRingInnerWidth" min="0" step="any" placeholder="e.g., 4" class="form-control">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Fields for Circular Ring -->
+      <div id="circularRingFields" class="productFields" style="display:none">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label>Outer Radius:</label>
+            <input type="number" id="circularRingOuterRadius" min="0" step="any" placeholder="e.g., 10" class="form-control">
+          </div>
+          <div class="form-group col-md-6">
+            <label>Inner Radius:</label>
+            <input type="number" id="circularRingInnerRadius" min="0" step="any" placeholder="e.g., 6" class="form-control">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Fields for Custom Product -->
+      <div id="customFields" class="productFields" style="display:none">
+        <div class="form-group">
+          <label>Unit Area (sq.in):</label>
+          <input type="number" id="customUnitArea" min="0" step="any" placeholder="e.g., 50" class="form-control">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Quantity:</label>
+        <input type="number" id="productQuantity" min="1" placeholder="e.g., 5" class="form-control">
+      </div>
+      <button id="addProductBtn" class="btn btn-primary mb-3">Add Product</button>
+      
+      <!-- List of Added Products -->
+      <h3>Products in Batch</h3>
+      <table class="table table-bordered">
+        <thead class="thead-light">
+          <tr>
+            <th>Product Name</th>
+            <th>Type</th>
+            <th>Parameters</th>
+            <th>Quantity</th>
+            <th>Unit Area (sq.in)</th>
+            <th>Total Area (sq.in)</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="productsTableBody"></tbody>
+      </table>
+      
+      <div class="d-flex justify-content-between">
+        <button id="backToStep1" class="btn btn-secondary">Previous</button>
+        <button id="toStep3" class="btn btn-primary">Next: Overview</button>
+        <button id="newBatch2" class="btn btn-secondary">New Batch</button>
+      </div>
+    </div>
+    
+    <!-- Step 3: Overview and Batch Processing -->
+    <div id="step3" class="step card p-4">
+      <h2 class="mb-3">Step 3: Overview & Batch Processing</h2>
+      <div class="infoBox" id="overviewInfo">
+        <!-- Raw material details and totals will be shown here -->
+      </div>
+      <div id="overviewProducts"></div>
+      <div class="d-flex justify-content-between">
+        <button id="backToStep2" class="btn btn-secondary">Previous</button>
+        <button id="processBatchBtn" class="btn btn-primary">Process Batch</button>
+        <button id="newBatch3" class="btn btn-secondary">New Batch</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Global state variables
+    let currentStep = 1;
+    let rawMaterial = {};
+    let processedLength = 0;
+    let netProcessArea = 0;
+    let products = [];
+    let batchProcessed = false;
+    
+    // Raw material definitions
+    const rawMaterials = {
+      "36x500": { width: 36, totalLength: 500, thickness: 0.5 },
+      "24x400": { width: 24, totalLength: 400, thickness: 0.4 },
+      "48x600": { width: 48, totalLength: 600, thickness: 0.6 }
+    };
+    
+    // Helper function to format product parameters for display
+    function formatParameters(product) {
+      switch(product.type) {
+        case 'rectangle':
+          return `Length: ${product.parameters.length}, Width: ${product.parameters.width}`;
+        case 'circle':
+          return `Radius: ${product.parameters.radius}`;
+        case 'rectangleRing':
+          return `Outer: ${product.parameters.outerLength} x ${product.parameters.outerWidth}, Inner: ${product.parameters.innerLength} x ${product.parameters.innerWidth}`;
+        case 'circularRing':
+          return `Outer Radius: ${product.parameters.outerRadius}, Inner Radius: ${product.parameters.innerRadius}`;
+        case 'custom':
+          return `Unit Area: ${product.parameters.customUnitArea}`;
+        default:
+          return '';
+      }
+    }
+    
+    // Function to show a given step and hide others
+    function showStep(step) {
+      currentStep = step;
+      document.querySelectorAll('.step').forEach(div => {
+        div.classList.remove('active');
+      });
+      document.getElementById('step' + step).classList.add('active');
+    }
+    
+    // Reset the whole form for a new batch
+    function resetBatch() {
+      batchProcessed = false;
+      products = [];
+      rawMaterial = {};
+      processedLength = 0;
+      netProcessArea = 0;
+      
+      document.getElementById('rawMaterialSelect').disabled = false;
+      document.getElementById('processedLength').disabled = false;
+      document.getElementById('processedLength').value = "";
+      document.getElementById('rawMaterialSelect').value = "36x500";
+      document.getElementById('rawMaterialInfo').innerHTML = "";
+      
+      document.getElementById('productName').value = "";
+      document.getElementById('productType').disabled = false;
+      document.getElementById('productName').disabled = false;
+      document.getElementById('rectLength').value = "";
+      document.getElementById('rectWidth').value = "";
+      document.getElementById('circleRadius').value = "";
+      document.getElementById('rectRingOuterLength').value = "";
+      document.getElementById('rectRingOuterWidth').value = "";
+      document.getElementById('rectRingInnerLength').value = "";
+      document.getElementById('rectRingInnerWidth').value = "";
+      document.getElementById('circularRingOuterRadius').value = "";
+      document.getElementById('circularRingInnerRadius').value = "";
+      document.getElementById('customUnitArea').value = "";
+      document.getElementById('productQuantity').value = "";
+      document.getElementById('productsTableBody').innerHTML = "";
+      
+      document.getElementById('overviewInfo').innerHTML = "";
+      document.getElementById('overviewProducts').innerHTML = "";
+      
+      document.querySelectorAll("input, select, button").forEach(el => {
+        if (el.id.indexOf("newBatch") === -1) el.disabled = false;
+      });
+      
+      showStep(1);
+    }
+    
+    // Navigation buttons for New Batch in each step
+    document.getElementById('newBatch1').addEventListener('click', resetBatch);
+    document.getElementById('newBatch2').addEventListener('click', resetBatch);
+    document.getElementById('newBatch3').addEventListener('click', resetBatch);
+    
+    // Step 1 to Step 2
+    document.getElementById('toStep2').addEventListener('click', function() {
+      const rawSelect = document.getElementById('rawMaterialSelect').value;
+      processedLength = parseFloat(document.getElementById('processedLength').value);
+      if (!processedLength || processedLength <= 0) {
+        alert("Please enter a valid processed length.");
+        return;
+      }
+      rawMaterial = rawMaterials[rawSelect];
+      if (processedLength > rawMaterial.totalLength) {
+        alert("Processed length cannot exceed available raw material length (" + rawMaterial.totalLength + " inches).");
+        return;
+      }
+      netProcessArea = rawMaterial.width * processedLength;
+      
+      document.getElementById('rawMaterialInfo').innerHTML = `
+        <strong>Raw Material:</strong> ${rawSelect} (Width: ${rawMaterial.width}", Thickness: ${rawMaterial.thickness}")<br>
+        <strong>Processed Length:</strong> ${processedLength} inches<br>
+        <strong>Net Process Area:</strong> ${netProcessArea.toFixed(2)} sq.in
+      `;
+      
+      document.getElementById('rawMaterialSelect').disabled = true;
+      document.getElementById('processedLength').disabled = true;
+      
+      showStep(2);
+    });
+    
+    // Navigation: Step 2 back to Step 1
+    document.getElementById('backToStep1').addEventListener('click', function() {
+      showStep(1);
+    });
+    
+    // Navigation: Step 2 to Step 3
+    document.getElementById('toStep3').addEventListener('click', function() {
+      if (products.length === 0) {
+        alert("Please add at least one die-cut product.");
+        return;
+      }
+      
+      let totalProductsArea = products.reduce((sum, prod) => sum + prod.totalArea, 0);
+      let wasteArea = netProcessArea - totalProductsArea;
+      let wastePercent = (wasteArea / netProcessArea) * 100;
+      
+      let overviewHTML = `
+        <strong>Raw Material:</strong> ${document.getElementById('rawMaterialSelect').value}<br>
+        <strong>Processed Length:</strong> ${processedLength} inches<br>
+        <strong>Net Process Area:</strong> ${netProcessArea.toFixed(2)} sq.in<br>
+        <strong>Total Die-Cut Products Area:</strong> ${totalProductsArea.toFixed(2)} sq.in (${((totalProductsArea/netProcessArea)*100).toFixed(2)}%)<br>
+        <strong>Waste Area:</strong> ${wasteArea.toFixed(2)} sq.in (${wastePercent.toFixed(2)}%)
+      `;
+      document.getElementById('overviewInfo').innerHTML = overviewHTML;
+      
+      let tableHTML = `<table class="table table-bordered">
+        <thead class="thead-light">
+          <tr>
+            <th>Product Name</th>
+            <th>Type</th>
+            <th>Parameters</th>
+            <th>Quantity</th>
+            <th>Unit Area (sq.in)</th>
+            <th>Total Area (sq.in)</th>
+          </tr>
+        </thead>
+        <tbody>`;
+      products.forEach(prod => {
+        let unitAreaPercent = (prod.areaPerUnit / netProcessArea) * 100;
+        let totalAreaPercent = (prod.totalArea / netProcessArea) * 100;
+        tableHTML += `<tr>
+          <td>${prod.name}</td>
+          <td>${prod.type}</td>
+          <td>${formatParameters(prod)}</td>
+          <td>${prod.quantity}</td>
+          <td>${prod.areaPerUnit.toFixed(2)} (${unitAreaPercent.toFixed(2)}%)</td>
+          <td>${prod.totalArea.toFixed(2)} (${totalAreaPercent.toFixed(2)}%)</td>
+        </tr>`;
+      });
+      tableHTML += `</tbody></table>`;
+      document.getElementById('overviewProducts').innerHTML = tableHTML;
+      
+      showStep(3);
+    });
+    
+    // Navigation: Step 3 back to Step 2
+    document.getElementById('backToStep2').addEventListener('click', function() {
+      showStep(2);
+    });
+    
+    // Switch product parameter fields based on product type selection
+    document.getElementById('productType').addEventListener('change', function() {
+      let type = this.value;
+      document.getElementById('rectangleFields').style.display = 'none';
+      document.getElementById('circleFields').style.display = 'none';
+      document.getElementById('rectangleRingFields').style.display = 'none';
+      document.getElementById('circularRingFields').style.display = 'none';
+      document.getElementById('customFields').style.display = 'none';
+      
+      if (type === 'rectangle') {
+        document.getElementById('rectangleFields').style.display = 'block';
+      } else if (type === 'circle') {
+        document.getElementById('circleFields').style.display = 'block';
+      } else if (type === 'rectangleRing') {
+        document.getElementById('rectangleRingFields').style.display = 'block';
+      } else if (type === 'circularRing') {
+        document.getElementById('circularRingFields').style.display = 'block';
+      } else if (type === 'custom') {
+        document.getElementById('customFields').style.display = 'block';
+      }
+    });
+    
+    // Function to update the products table with a delete option
+    function updateProductsTable() {
+      let tbody = document.getElementById('productsTableBody');
+      tbody.innerHTML = "";
+      products.forEach((product, index) => {
+        let tr = document.createElement('tr');
+        
+        let tdName = document.createElement('td');
+        tdName.innerText = product.name;
+        tr.appendChild(tdName);
+        
+        let tdType = document.createElement('td');
+        tdType.innerText = product.type;
+        tr.appendChild(tdType);
+        
+        let tdParams = document.createElement('td');
+        tdParams.innerText = formatParameters(product);
+        tr.appendChild(tdParams);
+        
+        let tdQty = document.createElement('td');
+        tdQty.innerText = product.quantity;
+        tr.appendChild(tdQty);
+        
+        let tdUnitArea = document.createElement('td');
+        let unitPercent = ((product.areaPerUnit / netProcessArea) * 100).toFixed(2);
+        tdUnitArea.innerText = product.areaPerUnit.toFixed(2) + " (" + unitPercent + "%)";
+        tr.appendChild(tdUnitArea);
+        
+        let tdTotalArea = document.createElement('td');
+        let totalPercent = ((product.totalArea / netProcessArea) * 100).toFixed(2);
+        tdTotalArea.innerText = product.totalArea.toFixed(2) + " (" + totalPercent + "%)";
+        tr.appendChild(tdTotalArea);
+        
+        let tdAction = document.createElement('td');
+        let deleteBtn = document.createElement('button');
+        deleteBtn.innerText = "Delete";
+        deleteBtn.className = "btn btn-danger btn-sm";
+        deleteBtn.addEventListener('click', function() {
+          deleteProduct(index);
+        });
+        tdAction.appendChild(deleteBtn);
+        tr.appendChild(tdAction);
+        
+        tbody.appendChild(tr);
+      });
+    }
+    
+    // Delete a product from the array and update the table
+    function deleteProduct(index) {
+      products.splice(index, 1);
+      updateProductsTable();
+    }
+    
+    // Add Product button in Step 2
+    document.getElementById('addProductBtn').addEventListener('click', function() {
+      const name = document.getElementById('productName').value.trim();
+      if (!name) {
+        alert("Please enter a product name.");
+        return;
+      }
+      const productType = document.getElementById('productType').value;
+      const quantity = parseInt(document.getElementById('productQuantity').value);
+      if (!quantity || quantity <= 0) {
+        alert("Please enter a valid quantity.");
+        return;
+      }
+      
+      let parameters = {};
+      let area = 0;
+      
+      if (productType === 'rectangle') {
+        let length = parseFloat(document.getElementById('rectLength').value);
+        let width = parseFloat(document.getElementById('rectWidth').value);
+        if (!length || !width) { 
+          alert("Enter valid dimensions for rectangle."); 
+          return; 
+        }
+        parameters = { length, width };
+        area = length * width;
+      } else if (productType === 'circle') {
+        let radius = parseFloat(document.getElementById('circleRadius').value);
+        if (!radius) { 
+          alert("Enter a valid radius."); 
+          return; 
+        }
+        parameters = { radius };
+        area = Math.PI * radius * radius;
+      } else if (productType === 'rectangleRing') {
+        let outerLength = parseFloat(document.getElementById('rectRingOuterLength').value);
+        let outerWidth = parseFloat(document.getElementById('rectRingOuterWidth').value);
+        let innerLength = parseFloat(document.getElementById('rectRingInnerLength').value);
+        let innerWidth = parseFloat(document.getElementById('rectRingInnerWidth').value);
+        if (!outerLength || !outerWidth || !innerLength || !innerWidth) { 
+          alert("Enter valid dimensions for rectangle ring."); 
+          return; 
+        }
+        parameters = { outerLength, outerWidth, innerLength, innerWidth };
+        area = (outerLength * outerWidth) - (innerLength * innerWidth);
+      } else if (productType === 'circularRing') {
+        let outerRadius = parseFloat(document.getElementById('circularRingOuterRadius').value);
+        let innerRadius = parseFloat(document.getElementById('circularRingInnerRadius').value);
+        if (!outerRadius || !innerRadius) { 
+          alert("Enter valid radii for circular ring."); 
+          return; 
+        }
+        if (innerRadius >= outerRadius) {
+          alert("Inner radius must be smaller than outer radius.");
+          return;
+        }
+        parameters = { outerRadius, innerRadius };
+        area = Math.PI * (Math.pow(outerRadius, 2) - Math.pow(innerRadius, 2));
+      } else if (productType === 'custom') {
+        let customArea = parseFloat(document.getElementById('customUnitArea').value);
+        if (!customArea) {
+          alert("Enter a valid unit area for the custom product.");
+          return;
+        }
+        parameters = { customUnitArea: customArea };
+        area = customArea;
+      }
+      
+      let totalAreaForProduct = area * quantity;
+      let currentTotalArea = products.reduce((sum, prod) => sum + prod.totalArea, 0);
+      if (currentTotalArea + totalAreaForProduct > netProcessArea) {
+        alert("The die cut products you have entered cannot exceed the total processed raw material area (" + netProcessArea.toFixed(2) + " sq.in).");
+        return;
+      }
+      
+      let product = {
+        name,
+        type: productType,
+        parameters,
+        quantity,
+        areaPerUnit: area,
+        totalArea: totalAreaForProduct
+      };
+      
+      products.push(product);
+      updateProductsTable();
+      
+      // Clear input fields
+      document.getElementById('productName').value = "";
+      document.getElementById('productQuantity').value = "";
+      document.getElementById('rectLength').value = "";
+      document.getElementById('rectWidth').value = "";
+      document.getElementById('circleRadius').value = "";
+      document.getElementById('rectRingOuterLength').value = "";
+      document.getElementById('rectRingOuterWidth').value = "";
+      document.getElementById('rectRingInnerLength').value = "";
+      document.getElementById('rectRingInnerWidth').value = "";
+      document.getElementById('circularRingOuterRadius').value = "";
+      document.getElementById('circularRingInnerRadius').value = "";
+      document.getElementById('customUnitArea').value = "";
+    });
+  </script>
+  
+  <!-- Bootstrap JS and dependencies -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
