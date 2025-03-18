@@ -54,6 +54,10 @@
         <label for="processedLength">Processed Length (inches):</label>
         <input type="number" id="processedLength" min="1" placeholder="e.g., 200" class="form-control">
       </div>
+      <div class="form-group">
+        <label for="rawMaterialRate">Raw Material Rate ($ per sq.in):</label>
+        <input type="number" id="rawMaterialRate" min="0" step="any" placeholder="e.g., 0.05" class="form-control">
+      </div>
       <div class="d-flex justify-content-end">
         <button id="toStep2" class="btn btn-primary">Next</button>
       </div>
@@ -162,6 +166,7 @@
             <th>Parameters</th>
             <th>Quantity</th>
             <th>Unit Area (sq.in)</th>
+            <th>Unit Rate ($)</th>
             <th>Total Area (sq.in)</th>
             <th>Action</th>
           </tr>
@@ -179,12 +184,12 @@
     <div id="step3" class="step card p-4">
       <h2 class="mb-3">Step 3: Overview & Batch Processing</h2>
       <div class="infoBox" id="overviewInfo">
-        <!-- Raw material details and totals will be shown here -->
+        <!-- Raw material details, overall rates, and totals will be shown here -->
       </div>
       <div id="overviewProducts"></div>
       <div class="d-flex justify-content-between">
         <button id="backToStep2" class="btn btn-secondary">Previous</button>
-        <!-- New Batch button appears in Step 3 with a confirmation prompt -->
+        <!-- New Batch button with confirmation -->
         <button id="newBatchBtn" class="btn btn-primary">New Batch</button>
       </div>
     </div>
@@ -196,8 +201,8 @@
     let rawMaterial = {};
     let processedLength = 0;
     let netProcessArea = 0;
+    let rawMaterialRate = 0; // New rate field from Step 1
     let products = [];
-    let batchProcessed = false;
     
     // Raw material definitions
     const rawMaterials = {
@@ -224,11 +229,10 @@
       }
     }
     
-    // Function to update the progress bar
+    // Update progress bar based on step
     function updateProgressBar(step) {
       const progressBar = document.getElementById("progressBar");
-      let percent = 33;
-      let label = "Step 1 of 3";
+      let percent = 33, label = "Step 1 of 3";
       if(step === 2) { percent = 66; label = "Step 2 of 3"; }
       if(step === 3) { percent = 100; label = "Step 3 of 3"; }
       progressBar.style.width = percent + "%";
@@ -236,7 +240,7 @@
       progressBar.innerText = label;
     }
     
-    // Function to show a given step and hide others
+    // Show a given step and update progress bar
     function showStep(step) {
       currentStep = step;
       document.querySelectorAll('.step').forEach(div => {
@@ -246,17 +250,19 @@
       updateProgressBar(step);
     }
     
-    // Reset the whole form for a new batch
+    // Reset the form for a new batch
     function resetBatch() {
-      batchProcessed = false;
       products = [];
       rawMaterial = {};
       processedLength = 0;
       netProcessArea = 0;
+      rawMaterialRate = 0;
       
       document.getElementById('rawMaterialSelect').disabled = false;
       document.getElementById('processedLength').disabled = false;
+      document.getElementById('rawMaterialRate').disabled = false;
       document.getElementById('processedLength').value = "";
+      document.getElementById('rawMaterialRate').value = "";
       document.getElementById('rawMaterialSelect').value = "36x500";
       document.getElementById('rawMaterialInfo').innerHTML = "";
       
@@ -280,26 +286,31 @@
       document.getElementById('overviewProducts').innerHTML = "";
       
       document.querySelectorAll("input, select, button").forEach(el => {
-        // Do not disable New Batch button(s)
+        // Do not disable the New Batch button
         if (el.id.indexOf("newBatch") === -1) el.disabled = false;
       });
       
       showStep(1);
     }
     
-    // Navigation buttons for New Batch in each step (only appear after processing batch, so not included in Steps 1 and 2)
+    // New Batch button in Step 3 with confirmation
     document.getElementById('newBatchBtn').addEventListener('click', function() {
       if(confirm("Are you really want to start a new batch?")) {
         resetBatch();
       }
     });
     
-    // Navigation: Step 1 to Step 2
+    // Step 1 to Step 2
     document.getElementById('toStep2').addEventListener('click', function() {
       const rawSelect = document.getElementById('rawMaterialSelect').value;
       processedLength = parseFloat(document.getElementById('processedLength').value);
+      rawMaterialRate = parseFloat(document.getElementById('rawMaterialRate').value);
       if (!processedLength || processedLength <= 0) {
         alert("Please enter a valid processed length.");
+        return;
+      }
+      if (!rawMaterialRate || rawMaterialRate < 0) {
+        alert("Please enter a valid raw material rate.");
         return;
       }
       rawMaterial = rawMaterials[rawSelect];
@@ -312,21 +323,23 @@
       document.getElementById('rawMaterialInfo').innerHTML = `
         <strong>Raw Material:</strong> ${rawSelect} (Width: ${rawMaterial.width}", Thickness: ${rawMaterial.thickness}")<br>
         <strong>Processed Length:</strong> ${processedLength} inches<br>
-        <strong>Net Process Area:</strong> ${netProcessArea.toFixed(2)} sq.in
+        <strong>Net Process Area:</strong> ${netProcessArea.toFixed(2)} sq.in<br>
+        <strong>Raw Material Rate:</strong> $${rawMaterialRate.toFixed(2)} per sq.in
       `;
       
       document.getElementById('rawMaterialSelect').disabled = true;
       document.getElementById('processedLength').disabled = true;
+      document.getElementById('rawMaterialRate').disabled = true;
       
       showStep(2);
     });
     
-    // Navigation: Step 2 back to Step 1
+    // Step 2 back to Step 1
     document.getElementById('backToStep1').addEventListener('click', function() {
       showStep(1);
     });
     
-    // Navigation: Step 2 to Step 3
+    // Step 2 to Step 3
     document.getElementById('toStep3').addEventListener('click', function() {
       if (products.length === 0) {
         alert("Please add at least one die-cut product.");
@@ -337,12 +350,16 @@
       let wasteArea = netProcessArea - totalProductsArea;
       let wastePercent = (wasteArea / netProcessArea) * 100;
       
+      // Calculate overall batch rate = (netProcessArea / totalProductsArea) * rawMaterialRate
+      let overallBatchRate = (netProcessArea / totalProductsArea) * rawMaterialRate;
+      
       let overviewHTML = `
         <strong>Raw Material:</strong> ${document.getElementById('rawMaterialSelect').value}<br>
         <strong>Processed Length:</strong> ${processedLength} inches<br>
         <strong>Net Process Area:</strong> ${netProcessArea.toFixed(2)} sq.in<br>
         <strong>Total Die-Cut Products Area:</strong> ${totalProductsArea.toFixed(2)} sq.in (${((totalProductsArea/netProcessArea)*100).toFixed(2)}%)<br>
-        <strong>Waste Area:</strong> ${wasteArea.toFixed(2)} sq.in (${wastePercent.toFixed(2)}%)
+        <strong>Waste Area:</strong> ${wasteArea.toFixed(2)} sq.in (${wastePercent.toFixed(2)}%)<br>
+        <strong>Overall Batch Rate:</strong> $${overallBatchRate.toFixed(2)} per sq.in
       `;
       document.getElementById('overviewInfo').innerHTML = overviewHTML;
       
@@ -354,6 +371,7 @@
             <th>Parameters</th>
             <th>Quantity</th>
             <th>Unit Area (sq.in)</th>
+            <th>Unit Rate ($)</th>
             <th>Total Area (sq.in)</th>
           </tr>
         </thead>
@@ -361,12 +379,15 @@
       products.forEach(prod => {
         let unitAreaPercent = (prod.areaPerUnit / netProcessArea) * 100;
         let totalAreaPercent = (prod.totalArea / netProcessArea) * 100;
+        // Calculate product unit rate = product.areaPerUnit * rawMaterialRate * (netProcessArea / totalProductsArea)
+        let unitRate = prod.areaPerUnit * rawMaterialRate * (netProcessArea / totalProductsArea);
         tableHTML += `<tr>
           <td>${prod.name}</td>
           <td>${prod.type}</td>
           <td>${formatParameters(prod)}</td>
           <td>${prod.quantity}</td>
           <td>${prod.areaPerUnit.toFixed(2)} (${unitAreaPercent.toFixed(2)}%)</td>
+          <td>$${unitRate.toFixed(2)}</td>
           <td>${prod.totalArea.toFixed(2)} (${totalAreaPercent.toFixed(2)}%)</td>
         </tr>`;
       });
@@ -376,7 +397,7 @@
       showStep(3);
     });
     
-    // Navigation: Step 3 back to Step 2
+    // Step 3 back to Step 2
     document.getElementById('backToStep2').addEventListener('click', function() {
       showStep(2);
     });
@@ -431,6 +452,13 @@
         tdUnitArea.innerText = product.areaPerUnit.toFixed(2) + " (" + unitPercent + "%)";
         tr.appendChild(tdUnitArea);
         
+        let tdUnitRate = document.createElement('td');
+        // For now, recalc total products area
+        let totalProductsArea = products.reduce((sum, prod) => sum + prod.totalArea, 0);
+        let unitRate = product.areaPerUnit * rawMaterialRate * (netProcessArea / totalProductsArea);
+        tdUnitRate.innerText = "$" + unitRate.toFixed(2);
+        tr.appendChild(tdUnitRate);
+        
         let tdTotalArea = document.createElement('td');
         let totalPercent = ((product.totalArea / netProcessArea) * 100).toFixed(2);
         tdTotalArea.innerText = product.totalArea.toFixed(2) + " (" + totalPercent + "%)";
@@ -450,7 +478,7 @@
       });
     }
     
-    // Delete a product from the array and update the table
+    // Delete product from list and update table
     function deleteProduct(index) {
       products.splice(index, 1);
       updateProductsTable();
@@ -543,7 +571,7 @@
       products.push(product);
       updateProductsTable();
       
-      // Clear input fields
+      // Clear input fields for next entry
       document.getElementById('productName').value = "";
       document.getElementById('productQuantity').value = "";
       document.getElementById('rectLength').value = "";
