@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- Mobile responsiveness -->
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>Rubber Die Cutting Process</title>
   <!-- Bootstrap CSS -->
@@ -28,6 +29,17 @@
       background-color: #1877f2;
       border-color: #1877f2;
     }
+    /* Small styling for the SVG icons */
+    .product-icon {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+    /* Adjust SVG inside preview */
+    #productIconPreview svg {
+      width: 50px;
+      height: auto;
+    }
   </style>
 </head>
 <body>
@@ -39,11 +51,10 @@
       <div id="progressBar" class="progress-bar" role="progressbar" style="width: 33%;" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100">Step 1 of 3</div>
     </div>
     
-    <!-- Step 1: Raw Material Selection -->
+    <!-- Step 1: Raw Material Selection & Rate -->
     <div id="step1" class="step active card p-4">
       <h2 class="mb-3">Step 1: Select Raw Material</h2>
-      <div class="form-row">
-      <div class="form-group col-md-6">
+      <div class="form-group">
         <label for="rawMaterialSelect">Raw Material:</label>
         <select id="rawMaterialSelect" class="form-control">
           <option value="36x500">36" x 500" (Thickness: 0.5")</option>
@@ -51,14 +62,13 @@
           <option value="48x600">48" x 600" (Thickness: 0.6")</option>
         </select>
       </div>
-            <div class="form-group col-md-6">
-        <label for="rawMaterialRate">Raw Material Rate ($ per sq.in):</label>
-        <input type="number" id="rawMaterialRate" min="0" step="any" placeholder="e.g., 0.05" class="form-control">
-      </div>
-      </div>
       <div class="form-group">
         <label for="processedLength">Processed Length (inches):</label>
         <input type="number" id="processedLength" min="1" placeholder="e.g., 200" class="form-control">
+      </div>
+      <div class="form-group">
+        <label for="rawMaterialRate">Raw Material Rate ($ per sq.in):</label>
+        <input type="number" id="rawMaterialRate" min="0" step="any" placeholder="e.g., 0.05" class="form-control">
       </div>
       <div class="d-flex justify-content-end">
         <button id="toStep2" class="btn btn-primary">Next</button>
@@ -85,6 +95,8 @@
           <option value="custom">Custom</option>
         </select>
       </div>
+      <!-- SVG preview for selected product type -->
+      <div id="productIconPreview" class="mb-3"></div>
       
       <!-- Fields for Rectangle -->
       <div id="rectangleFields" class="productFields">
@@ -158,11 +170,12 @@
       </div>
       <button id="addProductBtn" class="btn btn-primary mb-3">Add Product</button>
       
-      <!-- List of Added Products -->
+      <!-- Products Table -->
       <h3>Products in Batch</h3>
       <table class="table table-bordered">
         <thead class="thead-light">
           <tr>
+            <th>Icon</th>
             <th>Product Name</th>
             <th>Type</th>
             <th>Parameters</th>
@@ -191,19 +204,36 @@
       <div id="overviewProducts"></div>
       <div class="d-flex justify-content-between">
         <button id="backToStep2" class="btn btn-secondary">Previous</button>
-        <!-- New Batch button with confirmation -->
         <button id="newBatchBtn" class="btn btn-primary">New Batch</button>
       </div>
     </div>
   </div>
   
   <script>
+    // Helper function to return SVG icon for a given product type
+    function getSVGForProduct(type) {
+      switch(type) {
+        case "rectangle":
+          return '<svg class="product-icon" viewBox="0 0 50 30" xmlns="http://www.w3.org/2000/svg"><rect width="50" height="30" fill="#1877f2" stroke="#000" stroke-width="1"/></svg>';
+        case "rectangleRing":
+          return '<svg class="product-icon" viewBox="0 0 60 40" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="60" height="40" fill="#1877f2" stroke="#000" stroke-width="1"/><rect x="10" y="10" width="40" height="20" fill="#fff"/></svg>';
+        case "circle":
+          return '<svg class="product-icon" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><circle cx="15" cy="15" r="15" fill="#1877f2" stroke="#000" stroke-width="1"/></svg>';
+        case "circularRing":
+          return '<svg class="product-icon" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="#1877f2" stroke="#000" stroke-width="1"/><circle cx="20" cy="20" r="10" fill="#fff"/></svg>';
+        case "custom":
+          return '<svg class="product-icon" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><polygon points="20,0 40,40 0,40" fill="#1877f2" stroke="#000" stroke-width="1"/></svg>';
+        default:
+          return '';
+      }
+    }
+    
     // Global state variables
     let currentStep = 1;
     let rawMaterial = {};
     let processedLength = 0;
     let netProcessArea = 0;
-    let rawMaterialRate = 0; // New rate field from Step 1
+    let rawMaterialRate = 0;
     let products = [];
     
     // Raw material definitions
@@ -231,7 +261,7 @@
       }
     }
     
-    // Update progress bar based on step
+    // Update progress bar
     function updateProgressBar(step) {
       const progressBar = document.getElementById("progressBar");
       let percent = 33, label = "Step 1 of 3";
@@ -242,17 +272,15 @@
       progressBar.innerText = label;
     }
     
-    // Show a given step and update progress bar
+    // Show step and update progress bar
     function showStep(step) {
       currentStep = step;
-      document.querySelectorAll('.step').forEach(div => {
-        div.classList.remove('active');
-      });
+      document.querySelectorAll('.step').forEach(div => div.classList.remove('active'));
       document.getElementById('step' + step).classList.add('active');
       updateProgressBar(step);
     }
     
-    // Reset the form for a new batch
+    // Reset form for new batch
     function resetBatch() {
       products = [];
       rawMaterial = {};
@@ -288,14 +316,13 @@
       document.getElementById('overviewProducts').innerHTML = "";
       
       document.querySelectorAll("input, select, button").forEach(el => {
-        // Do not disable the New Batch button
         if (el.id.indexOf("newBatch") === -1) el.disabled = false;
       });
       
       showStep(1);
     }
     
-    // New Batch button in Step 3 with confirmation
+    // New Batch button confirmation in Step 3
     document.getElementById('newBatchBtn').addEventListener('click', function() {
       if(confirm("Are you really want to start a new batch?")) {
         resetBatch();
@@ -311,7 +338,7 @@
         alert("Please enter a valid processed length.");
         return;
       }
-      if (!rawMaterialRate || rawMaterialRate < 0) {
+      if (rawMaterialRate === null || isNaN(rawMaterialRate) || rawMaterialRate < 0) {
         alert("Please enter a valid raw material rate.");
         return;
       }
@@ -347,12 +374,10 @@
         alert("Please add at least one die-cut product.");
         return;
       }
-      
       let totalProductsArea = products.reduce((sum, prod) => sum + prod.totalArea, 0);
       let wasteArea = netProcessArea - totalProductsArea;
       let wastePercent = (wasteArea / netProcessArea) * 100;
-      
-      // Calculate overall batch rate = (netProcessArea / totalProductsArea) * rawMaterialRate
+      // Overall batch rate = (netProcessArea / totalProductsArea) * rawMaterialRate
       let overallBatchRate = (netProcessArea / totalProductsArea) * rawMaterialRate;
       
       let overviewHTML = `
@@ -368,6 +393,7 @@
       let tableHTML = `<table class="table table-bordered">
         <thead class="thead-light">
           <tr>
+            <th>Icon</th>
             <th>Product Name</th>
             <th>Type</th>
             <th>Parameters</th>
@@ -384,6 +410,7 @@
         // Calculate product unit rate = product.areaPerUnit * rawMaterialRate * (netProcessArea / totalProductsArea)
         let unitRate = prod.areaPerUnit * rawMaterialRate * (netProcessArea / totalProductsArea);
         tableHTML += `<tr>
+          <td>${getSVGForProduct(prod.type)}</td>
           <td>${prod.name}</td>
           <td>${prod.type}</td>
           <td>${formatParameters(prod)}</td>
@@ -404,9 +431,12 @@
       showStep(2);
     });
     
-    // Switch product parameter fields based on product type selection
+    // Update the SVG preview when product type changes in Step 2
     document.getElementById('productType').addEventListener('change', function() {
       let type = this.value;
+      document.getElementById('productIconPreview').innerHTML = getSVGForProduct(type);
+      
+      // Show/hide corresponding parameter fields
       document.getElementById('rectangleFields').style.display = 'none';
       document.getElementById('circleFields').style.display = 'none';
       document.getElementById('rectangleRingFields').style.display = 'none';
@@ -426,12 +456,20 @@
       }
     });
     
-    // Function to update the products table with a delete option
+    // Initialize SVG preview for default product type on load
+    document.getElementById('productIconPreview').innerHTML = getSVGForProduct(document.getElementById('productType').value);
+    
+    // Function to update products table (with delete option) in Step 2
     function updateProductsTable() {
       let tbody = document.getElementById('productsTableBody');
       tbody.innerHTML = "";
       products.forEach((product, index) => {
         let tr = document.createElement('tr');
+        
+        // Icon column
+        let tdIcon = document.createElement('td');
+        tdIcon.innerHTML = getSVGForProduct(product.type);
+        tr.appendChild(tdIcon);
         
         let tdName = document.createElement('td');
         tdName.innerText = product.name;
@@ -455,7 +493,7 @@
         tr.appendChild(tdUnitArea);
         
         let tdUnitRate = document.createElement('td');
-        // For now, recalc total products area
+        // Recalculate total products area for unit rate calculation
         let totalProductsArea = products.reduce((sum, prod) => sum + prod.totalArea, 0);
         let unitRate = product.areaPerUnit * rawMaterialRate * (netProcessArea / totalProductsArea);
         tdUnitRate.innerText = "$" + unitRate.toFixed(2);
@@ -480,7 +518,7 @@
       });
     }
     
-    // Delete product from list and update table
+    // Delete a product and update table
     function deleteProduct(index) {
       products.splice(index, 1);
       updateProductsTable();
@@ -506,17 +544,17 @@
       if (productType === 'rectangle') {
         let length = parseFloat(document.getElementById('rectLength').value);
         let width = parseFloat(document.getElementById('rectWidth').value);
-        if (!length || !width) { 
-          alert("Enter valid dimensions for rectangle."); 
-          return; 
+        if (!length || !width) {
+          alert("Enter valid dimensions for rectangle.");
+          return;
         }
         parameters = { length, width };
         area = length * width;
       } else if (productType === 'circle') {
         let radius = parseFloat(document.getElementById('circleRadius').value);
-        if (!radius) { 
-          alert("Enter a valid radius."); 
-          return; 
+        if (!radius) {
+          alert("Enter a valid radius.");
+          return;
         }
         parameters = { radius };
         area = Math.PI * radius * radius;
@@ -525,18 +563,18 @@
         let outerWidth = parseFloat(document.getElementById('rectRingOuterWidth').value);
         let innerLength = parseFloat(document.getElementById('rectRingInnerLength').value);
         let innerWidth = parseFloat(document.getElementById('rectRingInnerWidth').value);
-        if (!outerLength || !outerWidth || !innerLength || !innerWidth) { 
-          alert("Enter valid dimensions for rectangle ring."); 
-          return; 
+        if (!outerLength || !outerWidth || !innerLength || !innerWidth) {
+          alert("Enter valid dimensions for rectangle ring.");
+          return;
         }
         parameters = { outerLength, outerWidth, innerLength, innerWidth };
         area = (outerLength * outerWidth) - (innerLength * innerWidth);
       } else if (productType === 'circularRing') {
         let outerRadius = parseFloat(document.getElementById('circularRingOuterRadius').value);
         let innerRadius = parseFloat(document.getElementById('circularRingInnerRadius').value);
-        if (!outerRadius || !innerRadius) { 
-          alert("Enter valid radii for circular ring."); 
-          return; 
+        if (!outerRadius || !innerRadius) {
+          alert("Enter valid radii for circular ring.");
+          return;
         }
         if (innerRadius >= outerRadius) {
           alert("Inner radius must be smaller than outer radius.");
@@ -573,7 +611,7 @@
       products.push(product);
       updateProductsTable();
       
-      // Clear input fields for next entry
+      // Clear fields for next entry
       document.getElementById('productName').value = "";
       document.getElementById('productQuantity').value = "";
       document.getElementById('rectLength').value = "";
